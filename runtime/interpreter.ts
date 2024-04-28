@@ -1,17 +1,19 @@
-import { ValueType, RuntimeVal, NumberVal, NullVal } from "./values.ts";
+import { RuntimeVal, NumberVal, MK_NULL } from "./values.ts";
 import {
   BinaryExpr,
+  Identifier,
   NodeType,
   NumericLiteral,
   Program,
   Stat,
 } from "../frontend/ast.ts";
+import Environment from "./environment.ts";
 
-function eval_program(program: Program): RuntimeVal {
-  let lastEvaluated: RuntimeVal = { type: "null", value: "null" } as NullVal;
+function eval_program(program: Program, env: Environment): RuntimeVal {
+  let lastEvaluated: RuntimeVal = MK_NULL();
 
   for (const statement of program.body) {
-    lastEvaluated = evaluate(statement);
+    lastEvaluated = evaluate(statement, env);
   }
 
   return lastEvaluated;
@@ -36,9 +38,9 @@ function eval_numeric_binary_expr(
   }
 }
 
-function eval_binary_exrp(binop: BinaryExpr): RuntimeVal {
-  const leftHandSide = evaluate(binop.left);
-  const rightHandSide = evaluate(binop.right);
+function eval_binary_exrp(binop: BinaryExpr, env: Environment): RuntimeVal {
+  const leftHandSide = evaluate(binop.left, env);
+  const rightHandSide = evaluate(binop.right, env);
   if (leftHandSide.type == "number" && rightHandSide.type == "number") {
     return eval_numeric_binary_expr(
       leftHandSide as NumberVal,
@@ -47,22 +49,27 @@ function eval_binary_exrp(binop: BinaryExpr): RuntimeVal {
     );
   }
 
-  return { type: "null", value: "null" } as NullVal;
+  return MK_NULL()
 }
 
-export function evaluate(astNode: Stat): RuntimeVal {
+function eval_identifier(ident: Identifier, env: Environment): RuntimeVal {
+  const val = env.lookupVar(ident.symbol);
+  return val;
+}
+
+export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
   switch (astNode.kind) {
     case "NumericLiteral":
       return {
         value: (astNode as NumericLiteral).value,
         type: "number",
       } as NumberVal;
-    case "NullLiteral":
-      return { value: "null", type: "null" } as NullVal;
+    case "Identifier":
+      return eval_identifier(astNode as Identifier, env)
     case "BinaryExpr":
-      return eval_binary_exrp(astNode as BinaryExpr);
+      return eval_binary_exrp(astNode as BinaryExpr, env);
     case "Program":
-      return eval_program(astNode as Program);
+      return eval_program(astNode as Program, env);
     default:
       console.error(
         "This AST Node has not yet been setup for interpretation. ",
