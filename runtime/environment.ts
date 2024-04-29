@@ -24,6 +24,7 @@ export default class Environment {
 
   public assignVar(varname: string, value: RuntimeVal): RuntimeVal {
     const env = this.resolve(varname);
+    if(varname == "true" || varname == "false" || varname == "null") throw `Cannot re-assign values to ${varname}.`
     if(env.constants.has(varname)) throw `Cannot re-assign to variable ${varname} as it was declared constant.`
     env.variables.set(varname, value)
     return value;

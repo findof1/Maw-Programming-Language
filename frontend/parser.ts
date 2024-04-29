@@ -6,6 +6,7 @@ import {
   Identifier,
   Expr,
   VarDeclaration,
+  AssignmentExpr,
 } from "./ast.ts";
 import { tokenize, Token, TokenType } from "./lexer.ts";
 
@@ -99,15 +100,32 @@ export default class Parser {
       identifier
     } as VarDeclaration;
 
-    this.expect(
-      TokenType.Semicolon,
-      "Must have semicolon at the end of a variable declaration."
-    );
+    if(this.at().type == TokenType.Semicolon) this.eat()
+
     return declaration;
   }
 
   private parse_expr(): Expr {
-    return this.parse_additive_expr();
+    return this.parse_assignmnet_expr()
+  }
+
+  private parse_assignmnet_expr(): Expr {
+    const left = this.parse_additive_expr() //Note to self: switch out w/ objectExpr later
+
+    if(this.at().type == TokenType.Equals){
+
+      this.eat();
+
+      const value = this.parse_assignmnet_expr()
+
+      if(this.at().type == TokenType.Semicolon) this.eat()
+
+      return {value, assigne:left, kind:"AssignmentExpr"} as AssignmentExpr
+    }
+
+
+
+    return left;
   }
 
   private parse_additive_expr(): Expr {
