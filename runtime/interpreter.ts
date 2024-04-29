@@ -6,56 +6,11 @@ import {
   NumericLiteral,
   Program,
   Stat,
+  VarDeclaration,
 } from "../frontend/ast.ts";
 import Environment from "./environment.ts";
-
-function eval_program(program: Program, env: Environment): RuntimeVal {
-  let lastEvaluated: RuntimeVal = MK_NULL();
-
-  for (const statement of program.body) {
-    lastEvaluated = evaluate(statement, env);
-  }
-
-  return lastEvaluated;
-}
-
-function eval_numeric_binary_expr(
-  left: NumberVal,
-  right: NumberVal,
-  operator: string
-): NumberVal {
-  switch (operator) {
-    case "+":
-      return { value: left.value + right.value, type: "number" };
-    case "-":
-      return { value: left.value - right.value, type: "number" };
-    case "*":
-      return { value: left.value * right.value, type: "number" };
-    case "/":
-      return { value: left.value / right.value, type: "number" };
-    case "%":
-      return { value: left.value % right.value, type: "number" };
-  }
-}
-
-function eval_binary_exrp(binop: BinaryExpr, env: Environment): RuntimeVal {
-  const leftHandSide = evaluate(binop.left, env);
-  const rightHandSide = evaluate(binop.right, env);
-  if (leftHandSide.type == "number" && rightHandSide.type == "number") {
-    return eval_numeric_binary_expr(
-      leftHandSide as NumberVal,
-      rightHandSide as NumberVal,
-      binop.operator
-    );
-  }
-
-  return MK_NULL()
-}
-
-function eval_identifier(ident: Identifier, env: Environment): RuntimeVal {
-  const val = env.lookupVar(ident.symbol);
-  return val;
-}
+import { eval_program, eval_var_declaration } from "./eval/statements.ts";
+import { eval_binary_exrp, eval_identifier } from "./eval/expressions.ts";
 
 export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
   switch (astNode.kind) {
@@ -70,6 +25,8 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       return eval_binary_exrp(astNode as BinaryExpr, env);
     case "Program":
       return eval_program(astNode as Program, env);
+    case "VarDeclaration":
+      return eval_var_declaration(astNode as VarDeclaration, env)
     default:
       console.error(
         "This AST Node has not yet been setup for interpretation. ",
@@ -78,3 +35,4 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       Deno.exit(1);
   }
 }
+

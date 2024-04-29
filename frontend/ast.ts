@@ -1,5 +1,8 @@
 export type NodeType =
+  //statements
   | "Program"
+  | "VarDeclaration"
+  //expressions
   | "NumericLiteral"
   | "NullLiteral"
   | "Identifier"
@@ -12,6 +15,13 @@ export interface Stat {
 export interface Program extends Stat {
   kind: "Program";
   body: Stat[];
+}
+
+export interface VarDeclaration extends Stat {
+  kind: "VarDeclaration";
+  constant: boolean;
+  identifier: string;
+  value?: Expr;
 }
 
 export interface Expr extends Stat {}
@@ -32,4 +42,3 @@ export interface NumericLiteral extends Expr {
   kind: "NumericLiteral";
   value: number;
 }
-
