@@ -1,4 +1,12 @@
-import { RuntimeVal } from "./values.ts";
+import { MK_BOOL, MK_NULL, RuntimeVal } from "./values.ts";
+
+export function createGlobalEnv(){
+  const env = new Environment()
+  env.declareVar("true", MK_BOOL(true), true);
+  env.declareVar("false", MK_BOOL(false), true);
+  env.declareVar("null", MK_NULL(), true);
+  return env;
+}
 
 export default class Environment {
   private parent?: Environment;
@@ -6,10 +14,13 @@ export default class Environment {
   private constants: Set<string>;
 
   constructor(parentENV?: Environment) {
+    const global = parentENV ? true : false;
     this.parent = parentENV;
     this.variables = new Map();
     this.constants = new Set();
+
   }
+  
 
   public declareVar(varname: string, value: RuntimeVal, isConstant: boolean): RuntimeVal {
     if (this.variables.has(varname)) {
