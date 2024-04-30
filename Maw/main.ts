@@ -2,7 +2,7 @@ import Parser from "./frontend/parser.ts";
 import { createGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
 
-const text = await Deno.readTextFile("./test.maws")
+const text = await Deno.readTextFile("././main.maws")
 run(text);
 
 export async function run(input:string) {
