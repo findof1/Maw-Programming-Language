@@ -2,6 +2,7 @@ export type NodeType =
   //statements
   | "Program"
   | "VarDeclaration"
+  | "FunctionDeclaration"
   //expressions
   | "AssignmentExpr"
   | "MemberExpr"
@@ -10,9 +11,12 @@ export type NodeType =
   | "Property"
   | "ObjectLiteral"
   | "NumericLiteral"
+  | "StringLiteral"
   | "NullLiteral"
   | "Identifier"
-  | "BinaryExpr";
+  | "BinaryExpr"
+  | "ConditionalExpr"
+  | "ReturnStat";
 
 export interface Stat {
   kind: NodeType;
@@ -23,11 +27,24 @@ export interface Program extends Stat {
   body: Stat[];
 }
 
+export interface ReturnStat extends Stat {
+  kind: "ReturnStat";
+  right: Expr;
+}
+
 export interface VarDeclaration extends Stat {
   kind: "VarDeclaration";
   constant: boolean;
   identifier: string;
   value?: Expr;
+}
+
+export interface FunctionDeclaration extends Stat {
+  kind: "FunctionDeclaration";
+  parameters: string[];
+  name: string;
+  body: Stat[];
+  return?: Expr;
 }
 
 export interface Expr extends Stat {}
@@ -66,6 +83,11 @@ export interface Identifier extends Expr {
 export interface NumericLiteral extends Expr {
   kind: "NumericLiteral";
   value: number;
+}
+
+export interface StringLiteral extends Expr {
+  kind: "StringLiteral";
+  value: string;
 }
 
 export interface Property extends Expr {

@@ -8,9 +8,19 @@ export enum TokenType {
   Comma,
   Colon,
   Dot,
+  SQuote,
+  DQutoe,
+  Funct,
+  Return,
 
   BinaryOperator,
   Equals,
+  DEquals,
+  GrEq,
+  LsEq,
+  Gr,
+  Ls,
+  NotEqual,
   Semicolon,
   OpenParen,
   ClosedParen,
@@ -23,7 +33,13 @@ export enum TokenType {
 
 const KEYWORDS: Record<string, TokenType> = {
   var: TokenType.Var,
-  const: TokenType.Const
+  Var: TokenType.Var,
+  const: TokenType.Const,
+  Const: TokenType.Const,
+  return: TokenType.Return,
+  Return: TokenType.Return,
+  funct: TokenType.Funct,
+  Funct: TokenType.Funct,
 };
 
 export interface Token {
@@ -51,9 +67,10 @@ function isskippable(str: string) {
 
 export function tokenize(sourceCode: string): Token[] {
   const tokens = new Array<Token>();
+  let insideStr = false;
 
-  //future ref: deep copy sourceCode before using
-  const src = sourceCode.split("");
+  const temp = JSON.parse(JSON.stringify(sourceCode))
+  const src = temp.split("");
 
   while (src.length > 0) {
     if (src[0] == "(") {
@@ -62,15 +79,15 @@ export function tokenize(sourceCode: string): Token[] {
       tokens.push(token(src.shift(), TokenType.ClosedParen));
     } else if (src[0] == "{") {
       tokens.push(token(src.shift(), TokenType.OpenBrace));
-    }else if (src[0] == "}") {
+    } else if (src[0] == "}") {
       tokens.push(token(src.shift(), TokenType.ClosedBrace));
-    }else if (src[0] == "[") {
+    } else if (src[0] == "[") {
       tokens.push(token(src.shift(), TokenType.OpenBracket));
-    }else if (src[0] == "]") {
+    } else if (src[0] == "]") {
       tokens.push(token(src.shift(), TokenType.ClosedBracket));
-    }else if (src[0] == ".") {
+    } else if (src[0] == ".") {
       tokens.push(token(src.shift(), TokenType.Dot));
-    }else if (
+    } else if (
       src[0] == "+" ||
       src[0] == "-" ||
       src[0] == "*" ||
@@ -78,15 +95,39 @@ export function tokenize(sourceCode: string): Token[] {
       src[0] == "%"
     ) {
       tokens.push(token(src.shift(), TokenType.BinaryOperator));
-    } else if (src[0] == "=") {
+    } else if (src[0] == "=" && src[1] == "=") {
+      src.shift()
+      src.shift()
+      tokens.push(token("==", TokenType.DEquals));
+    }else if (src[0] == "!" && src[1] == "=") {
+      src.shift()
+      src.shift()
+      tokens.push(token("!=", TokenType.NotEqual));
+    }else if (src[0] == ">" && src[1] == "=") {
+      src.shift()
+      src.shift()
+      tokens.push(token(">=", TokenType.GrEq));
+    }else if (src[0] == "<" && src[1] == "=") {
+      src.shift()
+      src.shift()
+      tokens.push(token("<=", TokenType.LsEq));
+    }  else if (src[0] == "=") {
       tokens.push(token(src.shift(), TokenType.Equals));
-      
+    }else if (src[0] == ">") {
+      tokens.push(token(src.shift(), TokenType.Gr));
+    }else if (src[0] == "<") {
+      tokens.push(token(src.shift(), TokenType.Ls));
     } else if (src[0] == ";") {
-      tokens.push(token(src.shift(), TokenType.Semicolon))
+      tokens.push(token(src.shift(), TokenType.Semicolon));
+    } else if (src[0] == `"`) {
+      tokens.push(token(src.shift(), TokenType.DQutoe));
+      insideStr = !insideStr;
+    } else if (src[0] == `'`) {
+      tokens.push(token(src.shift(), TokenType.SQuote));
     } else if (src[0] == ":") {
-      tokens.push(token(src.shift(), TokenType.Colon))
+      tokens.push(token(src.shift(), TokenType.Colon));
     } else if (src[0] == ",") {
-      tokens.push(token(src.shift(), TokenType.Comma))
+      tokens.push(token(src.shift(), TokenType.Comma));
     } else {
       if (isint(src[0])) {
         let num = "";
@@ -95,7 +136,13 @@ export function tokenize(sourceCode: string): Token[] {
         }
 
         tokens.push(token(num, TokenType.Number));
-      } else if (isalpha(src[0])) {
+      } else if (isalpha(src[0]) && insideStr) {
+        let ident = "";
+        while (src.length > 0 && src[0] !== `"`) {
+          ident += src.shift();
+        }
+        tokens.push(token(ident, TokenType.Identifier))
+      }else if (isalpha(src[0])) {
         let ident = "";
         while (src.length > 0 && isalpha(src[0])) {
           ident += src.shift();

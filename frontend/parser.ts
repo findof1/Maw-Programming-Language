@@ -11,6 +11,9 @@ import {
   ObjectLiteral,
   CallExpr,
   MemberExpr,
+  FunctionDeclaration,
+  ReturnStat,
+  StringLiteral,
 } from "./ast.ts";
 import { tokenize, Token, TokenType } from "./lexer.ts";
 
@@ -68,12 +71,75 @@ export default class Parser {
         return this.parse_var_declaration();
       case TokenType.Const:
         return this.parse_var_declaration();
+      case TokenType.Funct:
+        return this.parse_funct_declaration();
+      case TokenType.Return:
+        return this.parse_return_stat();
       default:
         return this.parse_expr();
     }
   }
 
-  parse_var_declaration(): Stat {
+  private parse_return_stat(): Stat {
+    this.eat();
+    const right = this.parse_stat();
+
+    const ret = {
+      kind: "ReturnStat",
+      right,
+    } as ReturnStat;
+
+    return ret;
+  }
+
+  private parse_funct_declaration(): Stat {
+    this.eat();
+
+    const name = this.expect(
+      TokenType.Identifier,
+      "Expected function name following funct keyword."
+    ).value;
+
+    const args = this.parse_args();
+    const parameters: string[] = [];
+
+    for (const arg of args) {
+      if (arg.kind !== "Identifier") {
+        throw "Inside function declaration expected parameters to be of type string";
+      }
+
+      parameters.push((arg as Identifier).symbol);
+    }
+
+    this.expect(
+      TokenType.OpenBrace,
+      "Expected function body following declaration."
+    );
+
+    const body: Stat[] = [];
+    let ret;
+    while (
+      this.at().type !== TokenType.EOF &&
+      this.at().type !== TokenType.ClosedBrace
+    ) {
+      body.push(this.parse_stat());
+    }
+
+    this.expect(
+      TokenType.ClosedBrace,
+      "Closing brace expected inside function declaration."
+    );
+    const funct = {
+      body,
+      name,
+      parameters,
+      kind: "FunctionDeclaration",
+    } as FunctionDeclaration;
+
+    return funct;
+  }
+
+  private parse_var_declaration(): Stat {
     const isConstant = this.eat().type == TokenType.Const;
     const identifier = this.expect(
       TokenType.Identifier,
@@ -110,7 +176,13 @@ export default class Parser {
   }
 
   private parse_expr(): Expr {
-    return this.parse_assignmnet_expr();
+    switch (this.at().type) {
+      case TokenType.DQutoe:
+      case TokenType.SQuote:
+        return this.parse_string();
+      default:
+        return this.parse_assignmnet_expr();
+    }
   }
 
   private parse_assignmnet_expr(): Expr {
@@ -119,7 +191,7 @@ export default class Parser {
     if (this.at().type == TokenType.Equals) {
       this.eat();
 
-      const value = this.parse_assignmnet_expr();
+      const value = this.parse_expr();
 
       if (this.at().type == TokenType.Semicolon) this.eat();
 
@@ -175,10 +247,45 @@ export default class Parser {
     return { kind: "ObjectLiteral", properties } as ObjectLiteral;
   }
 
+  private parse_string(): Expr {
+    let quoteType;
+    if (this.at().type == TokenType.DQutoe) {
+      quoteType = TokenType.DQutoe;
+      this.eat();
+    } else if (this.at().type == TokenType.SQuote) {
+      quoteType = TokenType.SQuote;
+      this.eat();
+    } else {
+      throw "Expected quote at start of string;";
+    }
+
+    if (this.at().type == quoteType) {
+      this.eat();
+      return {
+        kind: "StringLiteral",
+        value: "",
+      } as StringLiteral;
+    }
+    
+    const string = {
+      kind: "StringLiteral",
+      value: this.expect(
+        TokenType.Identifier,
+        "Expected value inside of string."
+      ).value,
+    } as StringLiteral;
+    
+    if (this.at().type !== quoteType)
+      throw "Expected corresponding end quote at the end of a string.";
+    this.eat()
+    return string;
+  }
+
+
   private parse_additive_expr(): Expr {
     let left = this.parse_multiplicitave_expr();
 
-    while (this.at().value == "+" || this.at().value == "-") {
+    while (this.at().value == "+" || this.at().value == "-" || this.at().value == "==" || this.at().value == ">=" || this.at().value == "<=" || this.at().value == "!="|| this.at().value == ">" || this.at().value == "<") {
       const operator = this.eat().value;
       const right = this.parse_multiplicitave_expr();
       left = {
@@ -219,7 +326,6 @@ export default class Parser {
     if (this.at().type == TokenType.OpenParen) {
       return this.parse_call_expr(member);
     }
-
     return member;
   }
 
@@ -249,16 +355,17 @@ export default class Parser {
   }
 
   private parse_arguments_list(): Expr[] {
-    const args = [this.parse_assignmnet_expr()];
+    const args = [this.parse_expr()];
 
     while (this.not_eof() && this.at().type == TokenType.Comma && this.eat()) {
-      args.push(this.parse_assignmnet_expr());
+      args.push(this.parse_expr());
     }
 
     return args;
   }
 
   private parse_member_expr(): Expr {
+    
     let object = this.parse_primary_expr();
 
     while (

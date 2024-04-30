@@ -1,10 +1,7 @@
-var foo = 50 / 2;
-
-const obj = {
-  x: 100,
-  y: 32,
-  foo,
-  complex: {
-    bar:true
-  }
-}
+const a = 10 == 5
+const b = 10 >= 5
+const c = 10 != 5
+const d = 10 <= 5
+const e = 10 < 5
+const f = 10 > 5
+print(a, b, c, d, e, f)

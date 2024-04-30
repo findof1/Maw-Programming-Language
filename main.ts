@@ -1,17 +1,15 @@
 import Parser from "./frontend/parser.ts";
-import Environment, { createGlobalEnv } from "./runtime/environment.ts";
+import { createGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
 
-run("./test.maws");
+const text = await Deno.readTextFile("./test.maws")
+run(text);
 
-async function run(filename:string) {
+export async function run(input:string) {
   const parser = new Parser();
   const env = createGlobalEnv();
-
-  const input = await Deno.readTextFile(filename)
   const program = parser.produceAST(input);
   const res = evaluate(program, env);
-  console.log(res);
 }
 
 async function repl() {
@@ -28,6 +26,5 @@ async function repl() {
 
     const program = parser.produceAST(input as string);
     const res = evaluate(program, env);
-    console.log(res);
   }
 }

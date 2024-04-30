@@ -1,4 +1,7 @@
-export type ValueType = "null" | "number" | "boolean" | "object";
+import { Stat } from "../frontend/ast.ts";
+import Environment from "./environment.ts";
+
+export type ValueType = "null" | "number" | "string" | "boolean" | "object" | "native-fn" | "function";
 
 export interface RuntimeVal {
   type: ValueType;
@@ -18,6 +21,15 @@ export interface NumberVal extends RuntimeVal {
   value: number;
 }
 
+export interface StringVal extends RuntimeVal {
+  type: "string";
+  value: string;
+}
+
+export function MK_STRING(n: string = ""): StringVal {
+  return { value: n, type: "string" } as StringVal;
+}
+
 export function MK_NUMBER(n: number = 0): NumberVal {
   return { value: n, type: "number" } as NumberVal;
 }
@@ -34,4 +46,26 @@ export function MK_BOOL(b: boolean = true): BoolVal {
 export interface ObjectVal extends RuntimeVal {
   type: "object";
   properties: Map<string, RuntimeVal>;
+}
+
+export type FunctionCall = (
+  args: RuntimeVal[],
+  env: Environment
+) => RuntimeVal;
+
+export interface NativeFnValue extends RuntimeVal {
+  type: "native-fn";
+  call: FunctionCall;
+}
+
+export function MK_NATIVE_FN(call: FunctionCall){
+  return {type: "native-fn", call} as NativeFnValue
+}
+
+export interface FunctionValue extends RuntimeVal {
+  type: "function";
+  name: string;
+  parameters: string[];
+  declarationEnv: Environment;
+  body: Stat[];
 }
