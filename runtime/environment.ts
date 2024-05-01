@@ -132,6 +132,16 @@ export function createGlobalEnv() {
   }
 
   env.declareVar("input", MK_NATIVE_FN(inputFunction), true);
+
+  function toNumber(_args: RuntimeVal[], _env: Environment) {
+    if(_args[0].type != "string") throw "Expected string parsed into toNumber function"
+    const str = (_args[0] as StringVal).value
+    const num = parseInt(str)
+    return MK_NUMBER(num);
+  }
+
+  env.declareVar("toNumber", MK_NATIVE_FN(toNumber), true);
+
   return env;
 }
 
