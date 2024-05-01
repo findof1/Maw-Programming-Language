@@ -1,3 +1,7 @@
-const result = input("Hi")
+funct add(a,b){
+  return a+b
+}
 
-print(result)
+const res = add(5, 8)
+
+print(res)

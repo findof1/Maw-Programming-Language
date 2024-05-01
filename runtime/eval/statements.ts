@@ -1,4 +1,4 @@
-import { BinaryExpr, FunctionDeclaration, IfStatement, Program, VarDeclaration } from "../../frontend/ast.ts";
+import { BinaryExpr, FunctionDeclaration, IfStatement, Program, VarDeclaration, WhileStatement } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
 import { BoolVal, FunctionValue, MK_NULL, RuntimeVal } from "../values.ts";
@@ -51,5 +51,16 @@ export function eval_if_statement(ifStat: IfStatement, env: Environment): Runtim
     evaluate(stat, env)
   }
 }
+return MK_NULL()
+}
+
+export function eval_while_statement(whileStat: WhileStatement, env: Environment): RuntimeVal{
+  const bool = evaluate(whileStat.comparison, env)
+  if((bool as BoolVal).value){
+  for(const stat of whileStat.body){
+    evaluate(stat, env)
+  }
+  eval_while_statement(whileStat, env)
+  }
 return MK_NULL()
 }

@@ -14,6 +14,7 @@ export enum TokenType {
   Return,
   If,
   Else,
+  While,
   BinaryOperator,
   Equals,
   DEquals,
@@ -45,6 +46,8 @@ const KEYWORDS: Record<string, TokenType> = {
   If: TokenType.If,
   else: TokenType.Else,
   Else: TokenType.Else,
+  while: TokenType.While,
+  While: TokenType.While,
 };
 
 export interface Token {
@@ -72,9 +75,9 @@ function isskippable(str: string) {
 
 export function tokenize(sourceCode: string): Token[] {
   const tokens = new Array<Token>();
-  let insideStr = {in:false, type:""};
+  let insideStr = { in: false, type: "" };
 
-  const temp = JSON.parse(JSON.stringify(sourceCode))
+  const temp = JSON.parse(JSON.stringify(sourceCode));
   const src = temp.split("");
 
   while (src.length > 0) {
@@ -90,37 +93,43 @@ export function tokenize(sourceCode: string): Token[] {
       tokens.push(token(src.shift(), TokenType.OpenBracket));
     } else if (src[0] == "]" && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.ClosedBracket));
-    } else if (src[0] == "." && !insideStr.in) {
+    } else if (src[0] == "/" && src[1] == "/" && !insideStr.in) {
+      src.shift();
+      src.shift();
+      while (src.length > 0 && (src[0] !== '\n' && src[0] !== '\r')) {
+        src.shift();
+      }
+    }else if (src[0] == "." && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Dot));
     } else if (
       src[0] == "+" ||
       src[0] == "-" ||
       src[0] == "*" ||
       src[0] == "/" ||
-      src[0] == "%" && !insideStr.in
+      (src[0] == "%" && !insideStr.in)
     ) {
       tokens.push(token(src.shift(), TokenType.BinaryOperator));
     } else if (src[0] == "=" && src[1] == "=" && !insideStr.in) {
-      src.shift()
-      src.shift()
+      src.shift();
+      src.shift();
       tokens.push(token("==", TokenType.DEquals));
-    }else if (src[0] == "!" && src[1] == "=" && !insideStr.in) {
-      src.shift()
-      src.shift()
+    } else if (src[0] == "!" && src[1] == "=" && !insideStr.in) {
+      src.shift();
+      src.shift();
       tokens.push(token("!=", TokenType.NotEqual));
-    }else if (src[0] == ">" && src[1] == "=" && !insideStr.in) {
-      src.shift()
-      src.shift()
+    } else if (src[0] == ">" && src[1] == "=" && !insideStr.in) {
+      src.shift();
+      src.shift();
       tokens.push(token(">=", TokenType.GrEq));
-    }else if (src[0] == "<" && src[1] == "=" && !insideStr.in) {
-      src.shift()
-      src.shift()
+    } else if (src[0] == "<" && src[1] == "=" && !insideStr.in) {
+      src.shift();
+      src.shift();
       tokens.push(token("<=", TokenType.LsEq));
-    }  else if (src[0] == "=" && !insideStr.in) {
+    } else if (src[0] == "=" && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Equals));
-    }else if (src[0] == ">" && !insideStr.in) {
+    } else if (src[0] == ">" && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Gr));
-    }else if (src[0] == "<" && !insideStr.in) {
+    } else if (src[0] == "<" && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Ls));
     } else if (src[0] == ";" && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Semicolon));
@@ -137,7 +146,7 @@ export function tokenize(sourceCode: string): Token[] {
     } else if (src[0] == "," && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Comma));
     } else {
-      if (isint(src[0])&& !insideStr.in) {
+      if (isint(src[0]) && !insideStr.in) {
         let num = "";
         while (src.length > 0 && isint(src[0])) {
           num += src.shift();
@@ -149,8 +158,8 @@ export function tokenize(sourceCode: string): Token[] {
         while (src.length > 0 && src[0] !== insideStr.type) {
           ident += src.shift();
         }
-        tokens.push(token(ident, TokenType.Identifier))
-      }else if (isalpha(src[0])) {
+        tokens.push(token(ident, TokenType.Identifier));
+      } else if (isalpha(src[0])) {
         let ident = "";
         while (src.length > 0 && isalpha(src[0])) {
           ident += src.shift();
@@ -159,14 +168,12 @@ export function tokenize(sourceCode: string): Token[] {
         const reserverd = KEYWORDS[ident];
         if (typeof reserverd == "number") {
           tokens.push(token(ident, reserverd));
-        } else if(ident == "elseif"){
+        } else if (ident == "elseif") {
           tokens.push(token("else", TokenType.Else));
           tokens.push(token("if", TokenType.If));
-        }else{
+        } else {
           tokens.push(token(ident, TokenType.Identifier));
         }
-
-        
       } else if (isskippable(src[0])) {
         src.shift();
       } else {

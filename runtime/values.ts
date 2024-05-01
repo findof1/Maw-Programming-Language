@@ -1,7 +1,14 @@
 import { Stat } from "../frontend/ast.ts";
 import Environment from "./environment.ts";
 
-export type ValueType = "null" | "number" | "string" | "boolean" | "object" | "native-fn" | "function";
+export type ValueType =
+  | "null"
+  | "number"
+  | "string"
+  | "boolean"
+  | "object"
+  | "native-fn"
+  | "function";
 
 export interface RuntimeVal {
   type: ValueType;
@@ -48,18 +55,15 @@ export interface ObjectVal extends RuntimeVal {
   properties: Map<string, RuntimeVal>;
 }
 
-export type FunctionCall = (
-  args: RuntimeVal[],
-  env: Environment
-) => RuntimeVal;
+export type FunctionCall = (args: RuntimeVal[], env: Environment) => RuntimeVal;
 
 export interface NativeFnValue extends RuntimeVal {
   type: "native-fn";
   call: FunctionCall;
 }
 
-export function MK_NATIVE_FN(call: FunctionCall){
-  return {type: "native-fn", call} as NativeFnValue
+export function MK_NATIVE_FN(call: FunctionCall) {
+  return { type: "native-fn", call } as NativeFnValue;
 }
 
 export interface FunctionValue extends RuntimeVal {

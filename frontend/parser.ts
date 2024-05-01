@@ -15,6 +15,7 @@ import {
   ReturnStat,
   StringLiteral,
   IfStatement,
+  WhileStatement,
 } from "./ast.ts";
 import { tokenize, Token, TokenType } from "./lexer.ts";
 
@@ -76,6 +77,8 @@ export default class Parser {
         return this.parse_funct_declaration();
       case TokenType.If:
         return this.parse_if_stat();
+      case TokenType.While:
+        return this.parse_while_stat();
       case TokenType.Return:
         return this.parse_return_stat();
       default:
@@ -97,18 +100,20 @@ export default class Parser {
 
   private parse_if_stat(): Stat {
     this.eat();
-    this.expect(TokenType.OpenParen, "Expected open parenthesis during if statement.")
-    const comparison = this.parse_expr()
-    this.expect(TokenType.ClosedParen, "Expected closing parenthesis during if statment.")
+    this.expect(
+      TokenType.OpenParen,
+      "Expected open parenthesis during if statement."
+    );
+    const comparison = this.parse_expr();
+    this.expect(
+      TokenType.ClosedParen,
+      "Expected closing parenthesis during if statment."
+    );
 
-    
     const body: Stat[] = [];
 
-    this.expect(
-      TokenType.OpenBrace,
-      "Expected open brace in if statement"
-    );
-    
+    this.expect(TokenType.OpenBrace, "Expected open brace in if statement");
+
     while (
       this.at().type !== TokenType.EOF &&
       this.at().type !== TokenType.ClosedBrace
@@ -121,50 +126,84 @@ export default class Parser {
       "Closing brace expected after if statement"
     );
 
-    if(this.at().type == TokenType.Else){
+    if (this.at().type == TokenType.Else) {
       this.eat();
 
       const elseBody: Stat[] = [];
 
-      if(this.at().type == TokenType.If){
+      if (this.at().type == TokenType.If) {
         elseBody.push(this.parse_stat());
-      }else{
-      this.expect(
-        TokenType.OpenBrace,
-        "Expected open brace in if statement"
-      );
-      
-      while (
-        this.at().type !== TokenType.EOF &&
-        this.at().type !== TokenType.ClosedBrace
-      ) {
-        elseBody.push(this.parse_stat());
+      } else {
+        this.expect(TokenType.OpenBrace, "Expected open brace in if statement");
+
+        while (
+          this.at().type !== TokenType.EOF &&
+          this.at().type !== TokenType.ClosedBrace
+        ) {
+          elseBody.push(this.parse_stat());
+        }
+
+        this.expect(
+          TokenType.ClosedBrace,
+          "Closing brace expected after if statement"
+        );
       }
-  
-      this.expect(
-        TokenType.ClosedBrace,
-        "Closing brace expected after if statement"
-      );
-    }
 
       const ifStat = {
         kind: "IfStatement",
         comparison,
         body,
-        elseBody
-      } as IfStatement
-  
-      return ifStat;
-    }else{
-    
-    const ifStat = {
-      kind: "IfStatement",
-      comparison,
-      body
-    } as IfStatement
+        elseBody,
+      } as IfStatement;
 
-    return ifStat;
+      return ifStat;
+    } else {
+      const ifStat = {
+        kind: "IfStatement",
+        comparison,
+        body,
+      } as IfStatement;
+
+      return ifStat;
+    }
   }
+
+  private parse_while_stat(): Stat {
+    this.eat();
+    this.expect(
+      TokenType.OpenParen,
+      "Expected open parenthesis during while statement."
+    );
+    const comparison = this.parse_expr();
+    this.expect(
+      TokenType.ClosedParen,
+      "Expected closing parenthesis during while statment."
+    );
+
+    const body: Stat[] = [];
+
+    this.expect(TokenType.OpenBrace, "Expected open brace in while statement");
+
+    while (
+      this.at().type !== TokenType.EOF &&
+      this.at().type !== TokenType.ClosedBrace
+    ) {
+      body.push(this.parse_stat());
+    }
+
+    this.expect(
+      TokenType.ClosedBrace,
+      "Closing brace expected after if statement"
+    );
+
+    
+      const whileStat = {
+        kind: "WhileStatement",
+        comparison,
+        body,
+      } as WhileStatement;
+
+      return whileStat;
   }
 
   private parse_funct_declaration(): Stat {
@@ -340,7 +379,7 @@ export default class Parser {
         value: "",
       } as StringLiteral;
     }
-    
+
     const string = {
       kind: "StringLiteral",
       value: this.expect(
@@ -348,18 +387,26 @@ export default class Parser {
         "Expected value inside of string."
       ).value,
     } as StringLiteral;
-    
+
     if (this.at().type !== quoteType)
       throw "Expected corresponding end quote at the end of a string.";
-    this.eat()
+    this.eat();
     return string;
   }
-
 
   private parse_additive_expr(): Expr {
     let left = this.parse_multiplicitave_expr();
 
-    while (this.at().value == "+" || this.at().value == "-" || this.at().value == "==" || this.at().value == ">=" || this.at().value == "<=" || this.at().value == "!="|| this.at().value == ">" || this.at().value == "<") {
+    while (
+      this.at().value == "+" ||
+      this.at().value == "-" ||
+      this.at().value == "==" ||
+      this.at().value == ">=" ||
+      this.at().value == "<=" ||
+      this.at().value == "!=" ||
+      this.at().value == ">" ||
+      this.at().value == "<"
+    ) {
       const operator = this.eat().value;
       const right = this.parse_multiplicitave_expr();
       left = {
@@ -441,7 +488,6 @@ export default class Parser {
   }
 
   private parse_member_expr(): Expr {
-    
     let object = this.parse_primary_expr();
 
     while (

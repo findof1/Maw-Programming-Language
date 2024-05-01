@@ -107,8 +107,11 @@ export function createGlobalEnv() {
   );
 
   function concatFunction(_args: RuntimeVal[], _env: Environment) {
-    if(_args[0].type !== "string" || _args[1].type !== "string") throw "Must concat 2 strings"
-    return MK_STRING((_args[0] as StringVal).value + (_args[1] as StringVal).value);
+    if (_args[0].type !== "string" || _args[1].type !== "string")
+      throw "Must concat 2 strings";
+    return MK_STRING(
+      (_args[0] as StringVal).value + (_args[1] as StringVal).value
+    );
   }
 
   env.declareVar("concat", MK_NATIVE_FN(concatFunction), true);
@@ -120,10 +123,11 @@ export function createGlobalEnv() {
   env.declareVar("time", MK_NATIVE_FN(timeFunction), true);
 
   function inputFunction(_args: RuntimeVal[], _env: Environment) {
-    const promptVal = _args[0] || MK_STRING("")
-    if(promptVal.type != "string") throw "Input function must take in a string prompt"
+    const promptVal = _args[0] || MK_STRING("");
+    if (promptVal.type != "string")
+      throw "Input function must take in a string prompt";
     const input = prompt((promptVal as StringVal).value);
-    if(!input) return MK_STRING("")
+    if (!input) return MK_STRING("");
     return MK_STRING(input);
   }
 

@@ -5,6 +5,9 @@ import { evaluate } from "./runtime/interpreter.ts";
 const text = await Deno.readTextFile("./main.maws")
 run(text);
 
+//compile cmd: deno compile --unstable --allow-read --allow-write --allow-net --allow-env --allow-run --output Maw main.ts
+//development run cmd: deno run -A main.ts
+
 export async function run(input:string) {
   const parser = new Parser();
   const env = createGlobalEnv();

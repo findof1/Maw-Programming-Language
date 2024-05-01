@@ -1,1 +1,2 @@
-print("Test")
+var res = input('Test characters: 5(03324325)+543 |453\34 6346%^&* ^*^&&(*#&$(@#$>><?)): ')
+print(res)

@@ -13,9 +13,16 @@ import {
   Stat,
   StringLiteral,
   VarDeclaration,
+  WhileStatement,
 } from "../frontend/ast.ts";
 import Environment from "./environment.ts";
-import { eval_function_declaration, eval_if_statement, eval_program, eval_var_declaration } from "./eval/statements.ts";
+import {
+  eval_function_declaration,
+  eval_if_statement,
+  eval_program,
+  eval_var_declaration,
+  eval_while_statement,
+} from "./eval/statements.ts";
 import {
   eval_assignment,
   eval_binary_exrp,
@@ -52,6 +59,8 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       return eval_function_declaration(astNode as FunctionDeclaration, env);
     case "IfStatement":
       return eval_if_statement(astNode as IfStatement, env);
+    case "WhileStatement":
+      return eval_while_statement(astNode as WhileStatement, env);
     case "AssignmentExpr":
       return eval_assignment(astNode as AssignmentExpr, env);
     default:
@@ -60,6 +69,6 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
         astNode
       );
       Deno.exit(1);
-      return MK_NULL()
+      return MK_NULL();
   }
 }
