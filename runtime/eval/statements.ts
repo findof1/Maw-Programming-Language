@@ -1,7 +1,7 @@
-import { BinaryExpr, FunctionDeclaration, IfStatement, Program, VarDeclaration, WhileStatement } from "../../frontend/ast.ts";
+import { BinaryExpr, FunctionDeclaration, IfStatement, Program, ReturnStat, VarDeclaration, WhileStatement } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
-import { BoolVal, FunctionValue, MK_NULL, RuntimeVal } from "../values.ts";
+import { BoolVal, FunctionValue, MK_NULL, ReturnVal, RuntimeVal } from "../values.ts";
 
 export function eval_program(program: Program, env: Environment): RuntimeVal {
   let lastEvaluated: RuntimeVal = MK_NULL();
@@ -42,25 +42,45 @@ export function eval_function_declaration(
 
 export function eval_if_statement(ifStat: IfStatement, env: Environment): RuntimeVal{
   const bool = evaluate(ifStat.comparison, env)
+  let result: RuntimeVal = MK_NULL();
   if((bool as BoolVal).value){
   for(const stat of ifStat.body){
-    evaluate(stat, env)
+    const temp = evaluate(stat, env)
+      if(temp.type == "return"){
+        result = (temp as ReturnVal)
+        break;
+      }
   }
 }else if(ifStat.elseBody){
   for(const stat of ifStat.elseBody){
-    evaluate(stat, env)
+    const temp = evaluate(stat, env)
+      if(temp.type == "return"){
+        result = (temp as ReturnVal)
+        break;
+      }
   }
 }
-return MK_NULL()
+
+return result
 }
 
 export function eval_while_statement(whileStat: WhileStatement, env: Environment): RuntimeVal{
   const bool = evaluate(whileStat.comparison, env)
+  let result: RuntimeVal = MK_NULL();
   if((bool as BoolVal).value){
   for(const stat of whileStat.body){
-    evaluate(stat, env)
+    const temp = evaluate(stat, env)
+      if(temp.type == "return"){
+        result = (temp as ReturnVal)
+        break;
+      }
   }
   eval_while_statement(whileStat, env)
   }
-return MK_NULL()
+return result
+}
+
+export function eval_return_statement(ret: ReturnStat, env: Environment): RuntimeVal{
+  const right = evaluate(ret.right, env)
+  return {type: "return", right} as ReturnVal
 }

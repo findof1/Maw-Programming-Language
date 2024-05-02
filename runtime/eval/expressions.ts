@@ -9,7 +9,7 @@ import {
 } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
-import { BoolVal, FunctionValue, MK_NULL, NativeFnValue, NumberVal, ObjectVal, RuntimeVal } from "../values.ts";
+import { BoolVal, FunctionValue, MK_NULL, NativeFnValue, NumberVal, ObjectVal, ReturnVal, RuntimeVal } from "../values.ts";
 
 function eval_numeric_binary_expr(
   left: NumberVal,
@@ -56,6 +56,26 @@ function eval_bool_binary_expr(
   }
 }
 
+function eval_and_or_expr(
+  left: BoolVal,
+  right: BoolVal,
+  operator: string
+): BoolVal {
+  switch (operator) {
+    case "and":
+      return { value: left.value && right.value, type: "boolean" };
+    case "And":
+      return { value: left.value && right.value, type: "boolean" };
+    case "or":
+      return { value: left.value || right.value, type: "boolean" };
+    case "Or":
+      return { value: left.value || right.value, type: "boolean" };
+    default:
+      throw "Invalid operator in binary expr"
+
+  }
+}
+
 export function eval_binary_exrp(
   binop: BinaryExpr,
   env: Environment
@@ -72,6 +92,12 @@ export function eval_binary_exrp(
     return eval_bool_binary_expr(
       leftHandSide as NumberVal,
       rightHandSide as NumberVal,
+      binop.operator
+    );
+  }else if(leftHandSide.type == "boolean" && rightHandSide.type == "boolean"){
+    return eval_and_or_expr(
+      leftHandSide as BoolVal,
+      rightHandSide as BoolVal,
       binop.operator
     );
   }
@@ -144,11 +170,11 @@ export function eval_call_expr(
     let result: RuntimeVal = MK_NULL();
 
     for(const stat of funct.body){
-      if(stat.kind == "ReturnStat"){
-        result = evaluate((stat as ReturnStat).right,scope)
+      const temp = evaluate(stat, scope)
+      if(temp.type == "return"){
+        result = (temp as ReturnVal).right.value
         break;
       }
-      evaluate(stat, scope)
     }
 
     return result;

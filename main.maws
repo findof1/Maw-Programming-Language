@@ -1,9 +1,23 @@
-funct add(a,b){
-  return a+b
+funct eightBall(){
+  const rand = random(1,5)
+  if(rand == 1){
+    return "Yes"
+  }
+  if(rand == 2){
+    return "No"
+  }
+  if(rand == 3){
+    return "Maybe"
+  }
+  if(rand == 4){
+    return "Ask again"
+  }
+  if(rand == 5){
+    return "I don't know"
+  }
 }
 
-const numOne = toNumber(input("Number 1: "))
-const numTwo = toNumber(input("Number 2: "))
-const res = add(numOne, numTwo)
-
-print(res)
+while(true){
+  input("Ask 8-ball a question: ")
+  print(eightBall())
+}

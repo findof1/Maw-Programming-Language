@@ -142,6 +142,30 @@ export function createGlobalEnv() {
 
   env.declareVar("toNumber", MK_NATIVE_FN(toNumber), true);
 
+  function toString(_args: RuntimeVal[], _env: Environment) {
+    if(_args[0].type != "number") throw "Expected number parsed into toString function"
+    const num = (_args[0] as NumberVal).value
+    const str = num.toString()
+    return MK_STRING(str);
+  }
+
+  env.declareVar("toString", MK_NATIVE_FN(toString), true);
+
+  function randomFunct(_args: RuntimeVal[], _env: Environment) {
+  const num = Math.random()
+  if(_args.length == 0) return MK_NUMBER(num);
+  if(_args.length != 2) throw "Must either pass in no args, or two args into random."
+  if(_args[0].type != "number" || _args[1].type != "number") throw "Expected number parsed random function."
+  let min = (_args[0] as NumberVal).value
+  let max = (_args[1] as NumberVal).value
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return MK_NUMBER(Math.floor(Math.random() * (max - min + 1)) + min);
+  }
+  
+
+  env.declareVar("random", MK_NATIVE_FN(randomFunct), true);
+
   return env;
 }
 

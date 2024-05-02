@@ -13,6 +13,8 @@ export enum TokenType {
   Funct,
   Return,
   If,
+  And,
+  Or,
   Else,
   While,
   BinaryOperator,
@@ -48,6 +50,10 @@ const KEYWORDS: Record<string, TokenType> = {
   Else: TokenType.Else,
   while: TokenType.While,
   While: TokenType.While,
+  or: TokenType.Or,
+  Or: TokenType.Or,
+  and: TokenType.And,
+  And: TokenType.And,
 };
 
 export interface Token {
@@ -99,6 +105,14 @@ export function tokenize(sourceCode: string): Token[] {
       while (src.length > 0 && (src[0] !== '\n' && src[0] !== '\r')) {
         src.shift();
       }
+    }else if (src[0] == "&" && src[1] == "&" && !insideStr.in) {
+      src.shift();
+      src.shift();
+      tokens.push(token("and", TokenType.And));
+    }else if (src[0] == "|" && src[1] == "|" && !insideStr.in) {
+      src.shift();
+      src.shift();
+      tokens.push(token("or", TokenType.Or));
     }else if (src[0] == "." && !insideStr.in) {
       tokens.push(token(src.shift(), TokenType.Dot));
     } else if (

@@ -316,7 +316,7 @@ export default class Parser {
 
   private parse_object_expr(): Expr {
     if (this.at().type !== TokenType.OpenBrace)
-      return this.parse_additive_expr();
+      return this.parse_and_or_expr();
 
     this.eat();
 
@@ -393,6 +393,29 @@ export default class Parser {
     this.eat();
     return string;
   }
+  
+
+  private parse_and_or_expr(): Expr {
+    let left = this.parse_additive_expr();
+
+    while (
+      this.at().value == "and" ||
+  this.at().value == "And" ||
+  this.at().value == "or" ||
+  this.at().value == "Or"
+    ) {
+      const operator = this.eat().value;
+      const right = this.parse_additive_expr();
+      left = {
+        kind: "BinaryExpr",
+        left,
+        right,
+        operator,
+      } as BinaryExpr;
+    }
+
+    return left;
+  }
 
   private parse_additive_expr(): Expr {
     let left = this.parse_multiplicitave_expr();
@@ -405,7 +428,7 @@ export default class Parser {
       this.at().value == "<=" ||
       this.at().value == "!=" ||
       this.at().value == ">" ||
-      this.at().value == "<"
+      this.at().value == "<" 
     ) {
       const operator = this.eat().value;
       const right = this.parse_multiplicitave_expr();

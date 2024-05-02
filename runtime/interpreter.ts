@@ -10,6 +10,7 @@ import {
   NumericLiteral,
   ObjectLiteral,
   Program,
+  ReturnStat,
   Stat,
   StringLiteral,
   VarDeclaration,
@@ -20,6 +21,7 @@ import {
   eval_function_declaration,
   eval_if_statement,
   eval_program,
+  eval_return_statement,
   eval_var_declaration,
   eval_while_statement,
 } from "./eval/statements.ts";
@@ -32,6 +34,7 @@ import {
 } from "./eval/expressions.ts";
 
 export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
+  
   switch (astNode.kind) {
     case "NumericLiteral":
       return {
@@ -63,6 +66,8 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       return eval_while_statement(astNode as WhileStatement, env);
     case "AssignmentExpr":
       return eval_assignment(astNode as AssignmentExpr, env);
+    case "ReturnStat":
+      return eval_return_statement(astNode as ReturnStat, env);
     default:
       console.error(
         "This AST Node has not yet been setup for interpretation. ",

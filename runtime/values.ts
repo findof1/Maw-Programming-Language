@@ -8,10 +8,12 @@ export type ValueType =
   | "boolean"
   | "object"
   | "native-fn"
-  | "function";
+  | "function"
+  | "return";
 
 export interface RuntimeVal {
   type: ValueType;
+  value:any;
 }
 
 export interface NullVal extends RuntimeVal {
@@ -31,6 +33,11 @@ export interface NumberVal extends RuntimeVal {
 export interface StringVal extends RuntimeVal {
   type: "string";
   value: string;
+}
+
+export interface ReturnVal extends RuntimeVal {
+  type: "return";
+  right: RuntimeVal;
 }
 
 export function MK_STRING(n: string = ""): StringVal {
