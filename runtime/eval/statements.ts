@@ -106,7 +106,7 @@ function run_for_statement(forStat: ForStatement, scope: Environment){
         evaluate(forStat.increment, scope)
 
     }
-    run_for_statement(forStat, scope, bool)
+    run_for_statement(forStat, scope)
     }
     return result;
 }
