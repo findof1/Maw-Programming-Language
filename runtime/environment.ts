@@ -1,3 +1,4 @@
+import { sleep } from "https://deno.land/x/sleep/mod.ts"
 import { run } from "../main.ts";
 import {
   BoolVal,
@@ -151,6 +152,18 @@ export function createGlobalEnv() {
 
   env.declareVar("toString", MK_NATIVE_FN(toString), true);
 
+  function sleepFunct(_args: RuntimeVal[], _env: Environment) {
+    if(_args[0].type != "number") throw "Expected number parsed into sleep function"
+    const date = Date.now();
+    let curDate = Date.now();
+    do {
+      curDate = Date.now();
+    } while (curDate - date < _args[0].value);
+    return MK_NULL();
+  }
+
+  env.declareVar("sleep", MK_NATIVE_FN(sleepFunct), true);
+
   function randomFunct(_args: RuntimeVal[], _env: Environment) {
   const num = Math.random()
   if(_args.length == 0) return MK_NUMBER(num);
@@ -209,6 +222,7 @@ export default class Environment {
   public resolve(varname: string): Environment {
     if (this.variables.has(varname)) return this;
     if (this.parent == undefined)
+      
       throw `Cannot resolve ${varname} as it does not exist`;
 
     return this.parent.resolve(varname);

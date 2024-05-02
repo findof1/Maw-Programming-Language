@@ -15,6 +15,9 @@ export enum TokenType {
   If,
   And,
   Or,
+  Inc,
+  Dec,
+  For,
   Else,
   While,
   BinaryOperator,
@@ -52,6 +55,8 @@ const KEYWORDS: Record<string, TokenType> = {
   While: TokenType.While,
   or: TokenType.Or,
   Or: TokenType.Or,
+  for: TokenType.For,
+  FOr: TokenType.For,
   and: TokenType.And,
   And: TokenType.And,
 };
@@ -109,6 +114,14 @@ export function tokenize(sourceCode: string): Token[] {
       src.shift();
       src.shift();
       tokens.push(token("and", TokenType.And));
+    }else if (src[0] == "+" && src[1] == "+" && !insideStr.in) {
+      src.shift();
+      src.shift();
+      tokens.push(token("++", TokenType.Inc));
+    }else if (src[0] == "-" && src[1] == "-" && !insideStr.in) {
+      src.shift();
+      src.shift();
+      tokens.push(token("--", TokenType.Dec));
     }else if (src[0] == "|" && src[1] == "|" && !insideStr.in) {
       src.shift();
       src.shift();

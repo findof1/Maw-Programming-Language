@@ -3,6 +3,7 @@ import {
   AssignmentExpr,
   BinaryExpr,
   CallExpr,
+  ForStatement,
   FunctionDeclaration,
   Identifier,
   IfStatement,
@@ -18,6 +19,7 @@ import {
 } from "../frontend/ast.ts";
 import Environment from "./environment.ts";
 import {
+  eval_for_statement,
   eval_function_declaration,
   eval_if_statement,
   eval_program,
@@ -64,6 +66,8 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       return eval_if_statement(astNode as IfStatement, env);
     case "WhileStatement":
       return eval_while_statement(astNode as WhileStatement, env);
+    case "ForStatement":
+      return eval_for_statement(astNode as ForStatement, env);
     case "AssignmentExpr":
       return eval_assignment(astNode as AssignmentExpr, env);
     case "ReturnStat":

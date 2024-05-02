@@ -5,6 +5,7 @@ export type NodeType =
   | "FunctionDeclaration"
   | "IfStatement"
   | "WhileStatement"
+  | "ForStatement"
   //expressions
   | "AssignmentExpr"
   | "MemberExpr"
@@ -58,6 +59,14 @@ export interface IfStatement extends Stat {
 
 export interface WhileStatement extends Stat {
   kind: "WhileStatement";
+  comparison: Expr;
+  body: Stat[];
+}
+
+export interface ForStatement extends Stat {
+  kind: "ForStatement";
+  variable: VarDeclaration;
+  increment: AssignmentExpr;
   comparison: Expr;
   body: Stat[];
 }

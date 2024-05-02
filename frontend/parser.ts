@@ -16,6 +16,7 @@ import {
   StringLiteral,
   IfStatement,
   WhileStatement,
+  ForStatement,
 } from "./ast.ts";
 import { tokenize, Token, TokenType } from "./lexer.ts";
 
@@ -81,6 +82,8 @@ export default class Parser {
         return this.parse_while_stat();
       case TokenType.Return:
         return this.parse_return_stat();
+      case TokenType.For:
+        return this.parse_for_stat();
       default:
         return this.parse_expr();
     }
@@ -206,6 +209,49 @@ export default class Parser {
       return whileStat;
   }
 
+  private parse_for_stat(): Stat {
+    this.eat();
+    this.expect(
+      TokenType.OpenParen,
+      "Expected open parenthesis during while statement."
+    );
+    const varDec = this.parse_var_declaration();
+    const comparison = this.parse_expr();
+    if (this.at().type == TokenType.Semicolon) this.eat();
+    const assignment = this.parse_assignmnet_expr();
+    this.expect(
+      TokenType.ClosedParen,
+      "Expected closing parenthesis during while statment."
+    );
+
+    const body: Stat[] = [];
+
+    this.expect(TokenType.OpenBrace, "Expected open brace in while statement");
+
+    while (
+      this.at().type !== TokenType.EOF &&
+      this.at().type !== TokenType.ClosedBrace
+    ) {
+      body.push(this.parse_stat());
+    }
+
+    this.expect(
+      TokenType.ClosedBrace,
+      "Closing brace expected after if statement"
+    );
+
+    
+      const forStat = {
+        kind: "ForStatement",
+        variable: varDec,
+        increment: assignment,
+        comparison,
+        body,
+      } as ForStatement
+
+      return forStat;
+  }
+
   private parse_funct_declaration(): Stat {
     this.eat();
 
@@ -303,11 +349,31 @@ export default class Parser {
 
     if (this.at().type == TokenType.Equals) {
       this.eat();
-
       const value = this.parse_expr();
-
       if (this.at().type == TokenType.Semicolon) this.eat();
 
+      return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
+    }else if(this.at().type == TokenType.Inc){
+      this.eat();
+      const value = {
+        kind: "BinaryExpr",
+        left: { kind: "Identifier", symbol: (left as Identifier).symbol },
+        right: { kind: "NumericLiteral", value: 1 },
+        operator: "+"
+      }
+      ;
+      if (this.at().type == TokenType.Semicolon) this.eat();
+      return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
+    }else if(this.at().type == TokenType.Dec){
+      this.eat();
+      const value = {
+        kind: "BinaryExpr",
+        left: { kind: "Identifier", symbol: (left as Identifier).symbol },
+        right: { kind: "NumericLiteral", value: 1 },
+        operator: "-"
+      }
+      ;
+      if (this.at().type == TokenType.Semicolon) this.eat();
       return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
     }
 
