@@ -56,7 +56,7 @@ const KEYWORDS: Record<string, TokenType> = {
   or: TokenType.Or,
   Or: TokenType.Or,
   for: TokenType.For,
-  FOr: TokenType.For,
+  For: TokenType.For,
   and: TokenType.And,
   And: TokenType.And,
 };
@@ -86,7 +86,7 @@ function isskippable(str: string) {
 
 export function tokenize(sourceCode: string): Token[] {
   const tokens = new Array<Token>();
-  let insideStr = { in: false, type: "" };
+  const insideStr = { in: false, type: "" };
 
   const temp = JSON.parse(JSON.stringify(sourceCode));
   const src = temp.split("");

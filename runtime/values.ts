@@ -9,11 +9,11 @@ export type ValueType =
   | "object"
   | "native-fn"
   | "function"
-  | "return";
+  | "return"
+  | "array";
 
 export interface RuntimeVal {
   type: ValueType;
-  value:any;
 }
 
 export interface NullVal extends RuntimeVal {
@@ -62,16 +62,25 @@ export interface ObjectVal extends RuntimeVal {
   properties: Map<string, RuntimeVal>;
 }
 
+export interface ArrayVal extends RuntimeVal {
+  type: "array";
+  properties: Array<RuntimeVal>;
+}
+
 export type FunctionCall = (args: RuntimeVal[], env: Environment) => RuntimeVal;
+
 
 export interface NativeFnValue extends RuntimeVal {
   type: "native-fn";
   call: FunctionCall;
 }
 
+
 export function MK_NATIVE_FN(call: FunctionCall) {
   return { type: "native-fn", call } as NativeFnValue;
 }
+
+
 
 export interface FunctionValue extends RuntimeVal {
   type: "function";

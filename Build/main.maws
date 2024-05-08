@@ -1,2 +1,6 @@
-var res = input('Test characters: 5(03324325)+543 |453\34 6346%^&* ^*^&&(*#&$(@#$>><?)): ')
-print(res)
+window("
+<html>
+  <body>
+    <p>Hello World! from Maw</p>
+  </body>
+</html>")

@@ -12,7 +12,9 @@ export type NodeType =
   | "CallExpr"
   //Literals
   | "Property"
+  | "ArrProperty"
   | "ObjectLiteral"
+  | "ArrLiteral"
   | "NumericLiteral"
   | "StringLiteral"
   | "NullLiteral"
@@ -123,4 +125,15 @@ export interface Property extends Expr {
 export interface ObjectLiteral extends Expr {
   kind: "ObjectLiteral";
   properties: Property[];
+}
+
+export interface ArrProperty extends Expr {
+  kind: "ArrProperty";
+  key: number;
+  value: Expr;
+}
+
+export interface ArrLiteral extends Expr {
+  kind: "ArrLiteral";
+  properties: ArrProperty[];
 }

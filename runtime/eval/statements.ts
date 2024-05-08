@@ -1,4 +1,4 @@
-import { BinaryExpr, ForStatement, FunctionDeclaration, IfStatement, Program, ReturnStat, VarDeclaration, WhileStatement } from "../../frontend/ast.ts";
+import {  ForStatement, FunctionDeclaration, IfStatement, Program, ReturnStat, VarDeclaration, WhileStatement } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
 import { BoolVal, FunctionValue, MK_NULL, ReturnVal, RuntimeVal } from "../values.ts";

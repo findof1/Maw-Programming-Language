@@ -1,5 +1,6 @@
 import { RuntimeVal, NumberVal, MK_NULL, StringVal } from "./values.ts";
 import {
+  ArrLiteral,
   AssignmentExpr,
   BinaryExpr,
   CallExpr,
@@ -7,7 +8,7 @@ import {
   FunctionDeclaration,
   Identifier,
   IfStatement,
-  NodeType,
+  MemberExpr,
   NumericLiteral,
   ObjectLiteral,
   Program,
@@ -28,15 +29,16 @@ import {
   eval_while_statement,
 } from "./eval/statements.ts";
 import {
+  eval_arr_expr,
   eval_assignment,
   eval_binary_exrp,
   eval_call_expr,
   eval_identifier,
+  eval_member_expr,
   eval_object_expr,
 } from "./eval/expressions.ts";
 
 export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
-  
   switch (astNode.kind) {
     case "NumericLiteral":
       return {
@@ -47,6 +49,8 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       return eval_identifier(astNode as Identifier, env);
     case "ObjectLiteral":
       return eval_object_expr(astNode as ObjectLiteral, env);
+    case "ArrLiteral":
+      return eval_arr_expr(astNode as ArrLiteral, env);
     case "StringLiteral":
       return {
         value: (astNode as StringLiteral).value,
@@ -60,6 +64,8 @@ export function evaluate(astNode: Stat, env: Environment): RuntimeVal {
       return eval_program(astNode as Program, env);
     case "VarDeclaration":
       return eval_var_declaration(astNode as VarDeclaration, env);
+    case "MemberExpr":
+      return eval_member_expr(astNode as MemberExpr, env);
     case "FunctionDeclaration":
       return eval_function_declaration(astNode as FunctionDeclaration, env);
     case "IfStatement":

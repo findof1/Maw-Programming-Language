@@ -1,183 +1,110 @@
-import { sleep } from "https://deno.land/x/sleep/mod.ts"
-import { run } from "../main.ts";
 import {
-  BoolVal,
   MK_BOOL,
   MK_NATIVE_FN,
   MK_NULL,
-  MK_NUMBER,
-  MK_STRING,
-  NullVal,
-  NumberVal,
-  ObjectVal,
   RuntimeVal,
   StringVal,
 } from "./values.ts";
-
-function processObjectForPrint(obj: ObjectVal): any {
-  const res = processMapForPrint(obj.properties);
-  return res;
-}
-
-function processMapForPrint(obj: Map<string, RuntimeVal>): any {
-  const result: any = {};
-  obj.forEach((value, key) => {
-    if (value instanceof Map) {
-      result[key] = processMapForPrint(value);
-    } else if (value.type == "object") {
-      result[key] = processObjectForPrint(value as ObjectVal);
-    } else if (value.type == "number") {
-      result[key] = processNumberForPrint(value as NumberVal);
-    } else if (value.type == "string") {
-      result[key] = processStringForPrint(value as StringVal);
-    } else if (value.type == "null") {
-      result[key] = processNullForPrint(value as NullVal);
-    } else if (value.type == "boolean") {
-      result[key] = processBooleanForPrint(value as BoolVal);
-    } else {
-      result[key] = value;
-    }
-  });
-
-  return result;
-}
-
-function processNumberForPrint(arg: NumberVal): number {
-  return arg.value;
-}
-
-function processStringForPrint(arg: StringVal): string {
-  return arg.value;
-}
-
-function processNullForPrint(arg: NullVal): null {
-  return arg.value;
-}
-
-function processBooleanForPrint(arg: BoolVal): boolean {
-  return arg.value;
-}
+import {
+  concatFunction,
+  deleteVariable,
+  exit,
+  inputFunction,
+  joinFunct,
+  keyboardPress,
+  leftClick,
+  middleClick,
+  moveMouse,
+  parseCode,
+  parseScopedCode,
+  popFrom,
+  popFromFront,
+  printFunct,
+  pushTo,
+  pushToFront,
+  randomFunct,
+  rightClick,
+  scrollMouse,
+  sleepFunct,
+  timeFunction,
+  toArray,
+  toNumber,
+  toStringFunct,
+  windowFunct,
+} from "./nativeFunctions.ts";
+import { appendFileFunct, readFileFunct, writeFileFunct } from "../fileFunctions.ts";
 
 export function createGlobalEnv() {
   const env = new Environment();
+
+  //native variables
   env.declareVar("true", MK_BOOL(true), true);
+
   env.declareVar("false", MK_BOOL(false), true);
+
   env.declareVar("null", MK_NULL(), true);
 
-  env.declareVar(
-    "print",
-    MK_NATIVE_FN((args, scope) => {
-      args.forEach((arg) => {
-        switch (arg.type) {
-          case "number":
-            console.log(processNumberForPrint(arg as NumberVal));
-            break;
-          case "string":
-            console.log(processStringForPrint(arg as StringVal));
-            break;
-          case "null":
-            console.log(processNullForPrint(arg as NullVal));
-            break;
-          case "boolean":
-            console.log(processBooleanForPrint(arg as BoolVal));
-            break;
-          case "object":
-            const obj = processObjectForPrint(arg as ObjectVal);
-            console.log(obj);
-            break;
-          default:
-            console.log(arg);
-            break;
-        }
-      });
-      return MK_NULL();
-    }),
-    true
-  );
+  ////NATIVE FUNCTIONS
+  //proccess functions
+  env.declareVar("print", MK_NATIVE_FN(printFunct), true);
 
-  env.declareVar(
-    "parseCode",
-    MK_NATIVE_FN((args, scope) => {
-      if (!args[0]) return MK_NULL();
-      if (args[0].type !== "string")
-        throw `Expected string to be inputed into parseCode(), got: ${args[0].type}`;
-      run((args[0] as StringVal).value);
-      return MK_NULL();
-    }),
-    true
-  );
+  env.declareVar("parseScopedCode", MK_NATIVE_FN(parseScopedCode), true);
 
-  function concatFunction(_args: RuntimeVal[], _env: Environment) {
-    if (_args[0].type !== "string" || _args[1].type !== "string")
-      throw "Must concat 2 strings";
-    return MK_STRING(
-      (_args[0] as StringVal).value + (_args[1] as StringVal).value
-    );
-  }
+  env.declareVar("parseCode", MK_NATIVE_FN(parseCode), true);
 
-  env.declareVar("concat", MK_NATIVE_FN(concatFunction), true);
-
-  function timeFunction(_args: RuntimeVal[], _env: Environment) {
-    return MK_NUMBER(Date.now());
-  }
-
-  env.declareVar("time", MK_NATIVE_FN(timeFunction), true);
-
-  function inputFunction(_args: RuntimeVal[], _env: Environment) {
-    const promptVal = _args[0] || MK_STRING("");
-    if (promptVal.type != "string")
-      throw "Input function must take in a string prompt";
-    const input = prompt((promptVal as StringVal).value);
-    if (!input) return MK_STRING("");
-    return MK_STRING(input);
-  }
+  env.declareVar("exit", MK_NATIVE_FN(exit), true);
 
   env.declareVar("input", MK_NATIVE_FN(inputFunction), true);
 
-  function toNumber(_args: RuntimeVal[], _env: Environment) {
-    if(_args[0].type != "string") throw "Expected string parsed into toNumber function"
-    const str = (_args[0] as StringVal).value
-    const num = parseInt(str)
-    return MK_NUMBER(num);
-  }
+  env.declareVar("sleep", MK_NATIVE_FN(sleepFunct), true);
+
+  env.declareVar("delete", MK_NATIVE_FN(deleteVariable), true);
+
+  env.declareVar("readFile", MK_NATIVE_FN(readFileFunct), true);
+
+  env.declareVar("writeFile", MK_NATIVE_FN(writeFileFunct), true);
+
+  env.declareVar("appendFile", MK_NATIVE_FN(appendFileFunct), true);
+
+  env.declareVar("window", MK_NATIVE_FN(windowFunct), true);
+
+  env.declareVar("keyboardPress", MK_NATIVE_FN(keyboardPress), true);
+
+  env.declareVar("leftClick", MK_NATIVE_FN(leftClick), true);
+
+  env.declareVar("rightClick", MK_NATIVE_FN(rightClick), true);
+
+  env.declareVar("middleClick", MK_NATIVE_FN(middleClick), true);
+
+  env.declareVar("moveMouse", MK_NATIVE_FN(moveMouse), true);
+
+  env.declareVar("scrollMouse", MK_NATIVE_FN(scrollMouse), true);
+
+  //string functions
+  env.declareVar("concat", MK_NATIVE_FN(concatFunction), true);
 
   env.declareVar("toNumber", MK_NATIVE_FN(toNumber), true);
 
-  function toString(_args: RuntimeVal[], _env: Environment) {
-    if(_args[0].type != "number") throw "Expected number parsed into toString function"
-    const num = (_args[0] as NumberVal).value
-    const str = num.toString()
-    return MK_STRING(str);
-  }
+  env.declareVar("join", MK_NATIVE_FN(joinFunct), true);
 
-  env.declareVar("toString", MK_NATIVE_FN(toString), true);
-
-  function sleepFunct(_args: RuntimeVal[], _env: Environment) {
-    if(_args[0].type != "number") throw "Expected number parsed into sleep function"
-    const date = Date.now();
-    let curDate = Date.now();
-    do {
-      curDate = Date.now();
-    } while (curDate - date < _args[0].value);
-    return MK_NULL();
-  }
-
-  env.declareVar("sleep", MK_NATIVE_FN(sleepFunct), true);
-
-  function randomFunct(_args: RuntimeVal[], _env: Environment) {
-  const num = Math.random()
-  if(_args.length == 0) return MK_NUMBER(num);
-  if(_args.length != 2) throw "Must either pass in no args, or two args into random."
-  if(_args[0].type != "number" || _args[1].type != "number") throw "Expected number parsed random function."
-  let min = (_args[0] as NumberVal).value
-  let max = (_args[1] as NumberVal).value
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return MK_NUMBER(Math.floor(Math.random() * (max - min + 1)) + min);
-  }
-  
+  //number functions
+  env.declareVar("toString", MK_NATIVE_FN(toStringFunct), true);
 
   env.declareVar("random", MK_NATIVE_FN(randomFunct), true);
+
+  //time functions
+  env.declareVar("time", MK_NATIVE_FN(timeFunction), true);
+  
+  //array functions
+  env.declareVar("pushTo", MK_NATIVE_FN(pushTo), true);
+
+  env.declareVar("pushToFront", MK_NATIVE_FN(pushToFront), true);
+
+  env.declareVar("popFrom", MK_NATIVE_FN(popFrom), true);
+
+  env.declareVar("popFromFront", MK_NATIVE_FN(popFromFront), true);
+
+  env.declareVar("toArray", MK_NATIVE_FN(toArray), true);
 
   return env;
 }
@@ -188,7 +115,7 @@ export default class Environment {
   private constants: Set<string>;
 
   constructor(parentENV?: Environment) {
-    const global = parentENV ? true : false;
+    const _global = parentENV ? true : false;
     this.parent = parentENV;
     this.variables = new Map();
     this.constants = new Set();
@@ -202,7 +129,6 @@ export default class Environment {
     if (this.variables.has(varname)) {
       throw `Cannot declare variable ${varname} twice`;
     }
-
     if (isConstant) this.constants.add(varname);
     this.variables.set(varname, value);
 
@@ -219,10 +145,29 @@ export default class Environment {
     return value;
   }
 
+  public deleteVar(varname: RuntimeVal): RuntimeVal {
+    try {
+      if (varname.type !== "string")
+        throw "Must parse a string into delete var function";
+      const name = (varname as StringVal).value;
+      const env = this.resolve(name);
+      if (env.constants.has(name))
+        throw `Cannot delete variable ${name} as it was declared constant.`;
+      if (name == "true" || name == "false" || name == "null")
+        throw `Cannot re-assign values to ${name}.`;
+
+      env.variables.delete(name);
+
+      return MK_NULL();
+    } catch (err) {
+      console.log("Warning: " + err);
+      return MK_NULL();
+    }
+  }
+
   public resolve(varname: string): Environment {
     if (this.variables.has(varname)) return this;
     if (this.parent == undefined)
-      
       throw `Cannot resolve ${varname} as it does not exist`;
 
     return this.parent.resolve(varname);

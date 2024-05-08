@@ -1,22 +1,58 @@
 import Parser from "./frontend/parser.ts";
-import { createGlobalEnv } from "./runtime/environment.ts";
+import Environment, { createGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
 
-const text = await Deno.readTextFile("./main.maws")
+const text = Deno.readTextFileSync("./main.maws")
+
+export const lib = Deno.dlopen("test.dll", {
+  simulateKeyPress:{
+    parameters:["u32"],
+    result:"void"
+  },
+  simulateLeftMouseClick:{
+    parameters:[],
+    result:"void"
+  },
+  simulateRightMouseClick:{
+    parameters:[],
+    result:"void"
+  },
+  moveMouseCursor:{
+    parameters:["u32", "u32"],
+    result:"void"
+  },
+  simulateMiddleMouseClick:{
+    parameters:[],
+    result:"void"
+  },
+  simulateMouseScroll:{
+    parameters:["u32"],
+    result:"void"
+  },
+})
+
 run(text);
 
-//compile cmd: deno compile --unstable --allow-read --allow-write --allow-net --allow-env --allow-run --output Maw main.ts
+lib.close()
+
+//compile cmd: deno compile --unstable-ffi --allow-read --allow-write --allow-net --allow-env --allow-run --allow-ffi --output Maw main.ts
 
 //development run cmd: deno run -A main.ts
 
-export async function run(input:string) {
+export function run(input:string) {
   const parser = new Parser();
   const env = createGlobalEnv();
   const program = parser.produceAST(input);
-  const res = evaluate(program, env);
+  evaluate(program, env);
 }
 
-async function repl() {
+export function runCode(input:string, env: Environment) {
+  const parser = new Parser();
+  const program = parser.produceAST(input);
+  evaluate(program, env);
+}
+
+function _repl() {
   const parser = new Parser();
   const env = createGlobalEnv();
 
@@ -29,6 +65,6 @@ async function repl() {
     }
 
     const program = parser.produceAST(input as string);
-    const res = evaluate(program, env);
+    evaluate(program, env);
   }
 }

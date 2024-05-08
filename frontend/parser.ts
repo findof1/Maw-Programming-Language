@@ -17,13 +17,15 @@ import {
   IfStatement,
   WhileStatement,
   ForStatement,
+  ArrLiteral,
+  ArrProperty,
 } from "./ast.ts";
 import { tokenize, Token, TokenType } from "./lexer.ts";
 
 export default class Parser {
   private tokens: Token[] = [];
 
-  private not_eof(): Boolean {
+  private not_eof(): boolean {
     return this.tokens[0].type != TokenType.EOF;
   }
 
@@ -36,7 +38,7 @@ export default class Parser {
     return prev;
   }
 
-  private expect(type: TokenType, err: any) {
+  private expect(type: TokenType, err: string) {
     const prev = this.tokens.shift() as Token;
     if (!prev || prev.type != type) {
       console.error(
@@ -74,8 +76,6 @@ export default class Parser {
         return this.parse_var_declaration();
       case TokenType.Const:
         return this.parse_var_declaration();
-      case TokenType.Funct:
-        return this.parse_funct_declaration();
       case TokenType.If:
         return this.parse_if_stat();
       case TokenType.While:
@@ -199,14 +199,13 @@ export default class Parser {
       "Closing brace expected after if statement"
     );
 
-    
-      const whileStat = {
-        kind: "WhileStatement",
-        comparison,
-        body,
-      } as WhileStatement;
+    const whileStat = {
+      kind: "WhileStatement",
+      comparison,
+      body,
+    } as WhileStatement;
 
-      return whileStat;
+    return whileStat;
   }
 
   private parse_for_stat(): Stat {
@@ -240,16 +239,15 @@ export default class Parser {
       "Closing brace expected after if statement"
     );
 
-    
-      const forStat = {
-        kind: "ForStatement",
-        variable: varDec,
-        increment: assignment,
-        comparison,
-        body,
-      } as ForStatement
+    const forStat = {
+      kind: "ForStatement",
+      variable: varDec,
+      increment: assignment,
+      comparison,
+      body,
+    } as ForStatement;
 
-      return forStat;
+    return forStat;
   }
 
   private parse_funct_declaration(): Stat {
@@ -339,13 +337,15 @@ export default class Parser {
       case TokenType.DQutoe:
       case TokenType.SQuote:
         return this.parse_string();
+      case TokenType.Funct:
+        return this.parse_funct_declaration();
       default:
         return this.parse_assignmnet_expr();
     }
   }
 
   private parse_assignmnet_expr(): Expr {
-    const left = this.parse_object_expr();
+    const left = this.parse_object_arr_expr();
 
     if (this.at().type == TokenType.Equals) {
       this.eat();
@@ -353,26 +353,24 @@ export default class Parser {
       if (this.at().type == TokenType.Semicolon) this.eat();
 
       return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
-    }else if(this.at().type == TokenType.Inc){
+    } else if (this.at().type == TokenType.Inc) {
       this.eat();
       const value = {
         kind: "BinaryExpr",
         left: { kind: "Identifier", symbol: (left as Identifier).symbol },
         right: { kind: "NumericLiteral", value: 1 },
-        operator: "+"
-      }
-      ;
+        operator: "+",
+      };
       if (this.at().type == TokenType.Semicolon) this.eat();
       return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
-    }else if(this.at().type == TokenType.Dec){
+    } else if (this.at().type == TokenType.Dec) {
       this.eat();
       const value = {
         kind: "BinaryExpr",
         left: { kind: "Identifier", symbol: (left as Identifier).symbol },
         right: { kind: "NumericLiteral", value: 1 },
-        operator: "-"
-      }
-      ;
+        operator: "-",
+      };
       if (this.at().type == TokenType.Semicolon) this.eat();
       return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
     }
@@ -380,9 +378,47 @@ export default class Parser {
     return left;
   }
 
-  private parse_object_expr(): Expr {
-    if (this.at().type !== TokenType.OpenBrace)
+  private parse_object_arr_expr(): Expr {
+    switch (this.at().type) {
+      case TokenType.OpenBracket:
+        return this.parse_arr_expr();
+      case TokenType.OpenBrace:
+        return this.parse_object_expr();
+      default:
+        return this.parse_and_or_expr();
+    }
+  }
+
+  private parse_arr_expr(): Expr {
+    if (this.at().type !== TokenType.OpenBracket)
       return this.parse_and_or_expr();
+
+    this.eat();
+
+    const properties = new Array<ArrProperty>();
+    let iter = 0;
+    while (this.not_eof() && this.at().type !== TokenType.ClosedBracket) {
+      const value = this.parse_expr();
+
+      properties.push({ key: iter, kind: "ArrProperty", value });
+
+      if (this.at().type !== TokenType.ClosedBracket)
+        this.expect(
+          TokenType.Comma,
+          "Expected Closing Bracket following arr value."
+        );
+      iter++;
+    }
+
+    this.expect(
+      TokenType.ClosedBracket,
+      "Expected Closing Brace at the end of your object."
+    );
+    return { kind: "ArrLiteral", properties } as ArrLiteral;
+  }
+
+  private parse_object_expr(): Expr {
+    if (this.at().type !== TokenType.OpenBrace) return this.parse_and_or_expr();
 
     this.eat();
 
@@ -459,16 +495,15 @@ export default class Parser {
     this.eat();
     return string;
   }
-  
 
   private parse_and_or_expr(): Expr {
     let left = this.parse_additive_expr();
 
     while (
       this.at().value == "and" ||
-  this.at().value == "And" ||
-  this.at().value == "or" ||
-  this.at().value == "Or"
+      this.at().value == "And" ||
+      this.at().value == "or" ||
+      this.at().value == "Or"
     ) {
       const operator = this.eat().value;
       const right = this.parse_additive_expr();
@@ -494,7 +529,7 @@ export default class Parser {
       this.at().value == "<=" ||
       this.at().value == "!=" ||
       this.at().value == ">" ||
-      this.at().value == "<" 
+      this.at().value == "<"
     ) {
       const operator = this.eat().value;
       const right = this.parse_multiplicitave_expr();
@@ -619,11 +654,12 @@ export default class Parser {
           kind: "NumericLiteral",
           value: parseFloat(this.eat().value),
         } as NumericLiteral;
-      case TokenType.OpenParen:
+      case TokenType.OpenParen: {
         this.eat();
         const value = this.parse_expr();
         this.expect(TokenType.ClosedParen, "Use closed parenthasis");
         return value;
+      }
       default:
         console.error("Unexpected token found during parsing!", this.at());
         Deno.exit(1);
