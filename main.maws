@@ -1,1 +1,2 @@
-keyboardPress("a")
+const arr  = [0, 1,2,3]
+print(reverse(arr))

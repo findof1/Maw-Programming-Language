@@ -13,6 +13,7 @@ import {
   joinFunct,
   keyboardPress,
   leftClick,
+  lowercase,
   middleClick,
   moveMouse,
   parseCode,
@@ -23,6 +24,7 @@ import {
   pushTo,
   pushToFront,
   randomFunct,
+  reverse,
   rightClick,
   scrollMouse,
   sleepFunct,
@@ -30,6 +32,8 @@ import {
   toArray,
   toNumber,
   toStringFunct,
+  trim,
+  uppercase,
   windowFunct,
 } from "./nativeFunctions.ts";
 import { appendFileFunct, readFileFunct, writeFileFunct } from "../fileFunctions.ts";
@@ -80,6 +84,8 @@ export function createGlobalEnv() {
 
   env.declareVar("scrollMouse", MK_NATIVE_FN(scrollMouse), true);
 
+  env.declareVar("time", MK_NATIVE_FN(timeFunction), true);
+
   //string functions
   env.declareVar("concat", MK_NATIVE_FN(concatFunction), true);
 
@@ -87,13 +93,22 @@ export function createGlobalEnv() {
 
   env.declareVar("join", MK_NATIVE_FN(joinFunct), true);
 
+  env.declareVar("uppercase", MK_NATIVE_FN(uppercase), true);
+
+  env.declareVar("lowercase", MK_NATIVE_FN(lowercase), true);
+
+  env.declareVar("trim", MK_NATIVE_FN(trim), true);
+
+  env.declareVar("reverse", MK_NATIVE_FN(reverse), true);
+
+  env.declareVar("toArray", MK_NATIVE_FN(toArray), true);
+
   //number functions
   env.declareVar("toString", MK_NATIVE_FN(toStringFunct), true);
 
   env.declareVar("random", MK_NATIVE_FN(randomFunct), true);
 
-  //time functions
-  env.declareVar("time", MK_NATIVE_FN(timeFunction), true);
+  //env.declareVar("toArray", MK_NATIVE_FN(toArray), true);
   
   //array functions
   env.declareVar("pushTo", MK_NATIVE_FN(pushTo), true);
@@ -104,7 +119,7 @@ export function createGlobalEnv() {
 
   env.declareVar("popFromFront", MK_NATIVE_FN(popFromFront), true);
 
-  env.declareVar("toArray", MK_NATIVE_FN(toArray), true);
+  //env.declareVar("reverse", MK_NATIVE_FN(reverse), true);
 
   return env;
 }

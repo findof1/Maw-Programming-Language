@@ -109,6 +109,34 @@ export function parseCode(args: RuntimeVal[], scope: Environment) {
   return MK_NULL();
 }
 
+export function uppercase(args: RuntimeVal[], scope: Environment) {
+  if (args[0].type !== "string")
+    throw `Expected string to be inputed into uppercase()`;
+  return MK_STRING((args[0] as StringVal).value.toUpperCase());
+}
+
+export function lowercase(args: RuntimeVal[], scope: Environment) {
+  if (args[0].type !== "string")
+    throw `Expected string to be inputed into lowercase()`;
+  return MK_STRING((args[0] as StringVal).value.toLowerCase());
+}
+
+export function trim(args: RuntimeVal[], scope: Environment) {
+  if (args[0].type !== "string")
+    throw `Expected string to be inputed into trim()`;
+  return MK_STRING((args[0] as StringVal).value.trim());
+}
+
+export function reverse(args: RuntimeVal[], scope: Environment) {
+  if (args[0].type !== "string" && args[0].type !== "array")
+    throw `Expected string or array to be inputed into reverse()`;
+
+  if(args[0].type == "string") return MK_STRING((args[0] as StringVal).value.split("").reverse().join(""));
+
+  return {type:"array", properties:(args[0] as ArrayVal).properties.reverse()} as ArrayVal;
+  
+}
+
 export function pushTo(args: RuntimeVal[], _env: Environment) {
   if (args[0].type !== "array") {
     throw "Expected array parsed into pushTo()";
