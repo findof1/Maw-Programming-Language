@@ -21,7 +21,7 @@ export function deleteVariable(_args: RuntimeVal[], env: Environment) {
 
 export function sleepFunct(args: RuntimeVal[], _env: Environment) {
   if (args[0].type != "number")
-    throw "Expected number parsed into sleep function";
+    throw "Expected number parsed into sleep()";
   const date = Date.now();
   let curDate = Date.now();
   do {
@@ -32,10 +32,95 @@ export function sleepFunct(args: RuntimeVal[], _env: Environment) {
 
 export function toStringFunct(_args: RuntimeVal[], _env: Environment) {
   if (_args[0].type != "number")
-    throw "Expected number parsed into toString function";
+    throw "Expected number parsed into toString()";
   const num = (_args[0] as NumberVal).value;
   const str = num.toString();
   return MK_STRING(str);
+}
+
+export function round(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into round()";
+
+  return MK_NUMBER(Math.round((_args[0] as NumberVal).value));
+}
+
+export function ceil(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into ceil()";
+
+  return MK_NUMBER(Math.ceil((_args[0] as NumberVal).value));
+}
+
+export function abs(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into abs()";
+
+  return MK_NUMBER(Math.abs((_args[0] as NumberVal).value));
+}
+
+export function sin(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into sin()";
+
+  return MK_NUMBER(Math.sin((_args[0] as NumberVal).value));
+}
+
+export function cos(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into cos()";
+
+  return MK_NUMBER(Math.cos((_args[0] as NumberVal).value));
+}
+
+export function tan(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into tan()";
+
+  return MK_NUMBER(Math.tan((_args[0] as NumberVal).value));
+}
+
+export function factorial(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into factorial()";
+
+  const num = (_args[0] as NumberVal).value;
+  let result = 1;
+ 
+  for (let i = 2; i <= num; i++) {
+     result *= i;
+  }
+ 
+  return MK_NUMBER(result);
+}
+
+export function sqrt(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into sqrt()";
+
+  return MK_NUMBER(Math.sqrt((_args[0] as NumberVal).value));
+}
+
+export function floor(_args: RuntimeVal[], _env: Environment) {
+  if (_args[0].type != "number")
+    throw "Expected number parsed into floor()";
+
+  return MK_NUMBER(Math.floor((_args[0] as NumberVal).value));
+}
+
+export function pow(args: RuntimeVal[], _env: Environment) {
+  if (args[0].type != "number" || args[1].type != "number")
+    throw "Expected number parsed into pow()";
+
+  return MK_NUMBER(Math.pow((args[0] as NumberVal).value, (args[1] as NumberVal).value));
+}
+
+export function pi(_args: RuntimeVal[], _env: Environment) {
+  return MK_NUMBER(Math.PI);
+}
+
+export function e(_args: RuntimeVal[], _env: Environment) {
+  return MK_NUMBER(Math.E);
 }
 
 export function joinFunct(_args: RuntimeVal[], _env: Environment) {
@@ -96,7 +181,7 @@ export function concatFunction(_args: RuntimeVal[], _env: Environment) {
 export function parseScopedCode(args: RuntimeVal[], _env: Environment) {
   if (!args[0]) return MK_NULL();
   if (args[0].type !== "string")
-    throw `Expected string to be inputed into parseScopedCode(), got: ${args[0].type}`;
+    throw `Expected string to be parsed into parseScopedCode(), got: ${args[0].type}`;
   run((args[0] as StringVal).value);
   return MK_NULL();
 }
@@ -104,34 +189,47 @@ export function parseScopedCode(args: RuntimeVal[], _env: Environment) {
 export function parseCode(args: RuntimeVal[], scope: Environment) {
   if (!args[0]) return MK_NULL();
   if (args[0].type !== "string")
-    throw `Expected string to be inputed into parseCode(), got: ${args[0].type}`;
+    throw `Expected string to be parsed into parseCode(), got: ${args[0].type}`;
   runCode((args[0] as StringVal).value, scope);
   return MK_NULL();
 }
 
-export function uppercase(args: RuntimeVal[], scope: Environment) {
+export function uppercase(args: RuntimeVal[], _env: Environment) {
   if (args[0].type !== "string")
-    throw `Expected string to be inputed into uppercase()`;
+    throw `Expected string to be parsed into uppercase()`;
   return MK_STRING((args[0] as StringVal).value.toUpperCase());
 }
 
-export function lowercase(args: RuntimeVal[], scope: Environment) {
+export function length(args: RuntimeVal[], _env: Environment) {
+  if (args[0].type !== "string" && args[0].type !== "number" && args[0].type !== "array")
+    throw `Expected string, array, or number to be parsed into length()`;
+  
+  if(args[0].type == "string" ) return MK_NUMBER((args[0] as StringVal).value.length)
+
+  if(args[0].type == "array" ) return MK_NUMBER((args[0] as ArrayVal).properties.length)
+
+  return MK_NUMBER(`${(args[0] as NumberVal).value}`.length)
+}
+
+export function lowercase(args: RuntimeVal[], _env: Environment) {
   if (args[0].type !== "string")
-    throw `Expected string to be inputed into lowercase()`;
+    throw `Expected string to be parsed into lowercase()`;
   return MK_STRING((args[0] as StringVal).value.toLowerCase());
 }
 
-export function trim(args: RuntimeVal[], scope: Environment) {
+export function trim(args: RuntimeVal[], _env: Environment) {
   if (args[0].type !== "string")
-    throw `Expected string to be inputed into trim()`;
+    throw `Expected string to be parsed into trim()`;
   return MK_STRING((args[0] as StringVal).value.trim());
 }
 
-export function reverse(args: RuntimeVal[], scope: Environment) {
-  if (args[0].type !== "string" && args[0].type !== "array")
-    throw `Expected string or array to be inputed into reverse()`;
+export function reverse(args: RuntimeVal[], _env: Environment) {
+  if (args[0].type !== "string" && args[0].type !== "array" && args[0].type !== "number")
+    throw `Expected string, array or number to be parsed into reverse()`;
 
   if(args[0].type == "string") return MK_STRING((args[0] as StringVal).value.split("").reverse().join(""));
+
+  if(args[0].type == "number") return MK_NUMBER(parseInt(`${(args[0] as NumberVal).value}`.split("").reverse().join("")));
 
   return {type:"array", properties:(args[0] as ArrayVal).properties.reverse()} as ArrayVal;
   
@@ -188,17 +286,17 @@ export function keyboardPress(args: RuntimeVal[], _env: Environment) {
   return MK_NULL();
 }
 
-export function leftClick(args: RuntimeVal[], _env: Environment) {
+export function leftClick(_args: RuntimeVal[], _env: Environment) {
   lib.symbols.simulateLeftMouseClick()
   return MK_NULL();
 }
 
-export function rightClick(args: RuntimeVal[], _env: Environment) {
+export function rightClick(_args: RuntimeVal[], _env: Environment) {
   lib.symbols.simulateRightMouseClick()
   return MK_NULL();
 }
 
-export function middleClick(args: RuntimeVal[], _env: Environment) {
+export function middleClick(_args: RuntimeVal[], _env: Environment) {
   lib.symbols.simulateMiddleMouseClick()
   return MK_NULL();
 }

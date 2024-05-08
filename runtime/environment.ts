@@ -6,28 +6,41 @@ import {
   StringVal,
 } from "./values.ts";
 import {
+abs,
+ceil,
   concatFunction,
+  cos,
   deleteVariable,
+  e,
   exit,
+  factorial,
+  floor,
   inputFunction,
   joinFunct,
   keyboardPress,
   leftClick,
+  length,
   lowercase,
   middleClick,
   moveMouse,
   parseCode,
   parseScopedCode,
+  pi,
   popFrom,
   popFromFront,
+  pow,
   printFunct,
   pushTo,
   pushToFront,
   randomFunct,
   reverse,
   rightClick,
+  round,
   scrollMouse,
+  sin,
   sleepFunct,
+  sqrt,
+  tan,
   timeFunction,
   toArray,
   toNumber,
@@ -89,9 +102,9 @@ export function createGlobalEnv() {
   //string functions
   env.declareVar("concat", MK_NATIVE_FN(concatFunction), true);
 
-  env.declareVar("toNumber", MK_NATIVE_FN(toNumber), true);
+  env.declareVar("length", MK_NATIVE_FN(length), true);
 
-  env.declareVar("join", MK_NATIVE_FN(joinFunct), true);
+  env.declareVar("toNumber", MK_NATIVE_FN(toNumber), true);
 
   env.declareVar("uppercase", MK_NATIVE_FN(uppercase), true);
 
@@ -108,16 +121,48 @@ export function createGlobalEnv() {
 
   env.declareVar("random", MK_NATIVE_FN(randomFunct), true);
 
+  env.declareVar("pi", MK_NATIVE_FN(pi), true);
+
+  env.declareVar("e", MK_NATIVE_FN(e), true);
+
+  env.declareVar("pow", MK_NATIVE_FN(pow), true);
+
+  env.declareVar("round", MK_NATIVE_FN(round), true);
+
+  env.declareVar("ceil", MK_NATIVE_FN(ceil), true);
+
+  env.declareVar("floor", MK_NATIVE_FN(floor), true);
+
+  env.declareVar("abs", MK_NATIVE_FN(abs), true);
+
+  env.declareVar("sqrt", MK_NATIVE_FN(sqrt), true);
+
+  env.declareVar("factorial", MK_NATIVE_FN(factorial), true);
+
+  env.declareVar("sin", MK_NATIVE_FN(sin), true);
+
+  env.declareVar("cos", MK_NATIVE_FN(cos), true);
+
+  env.declareVar("tan", MK_NATIVE_FN(tan), true);
+
+  //env.declareVar("length", MK_NATIVE_FN(length), true);
+
   //env.declareVar("toArray", MK_NATIVE_FN(toArray), true);
+
+  //env.declareVar("reverse", MK_NATIVE_FN(reverse), true);
   
   //array functions
   env.declareVar("pushTo", MK_NATIVE_FN(pushTo), true);
+  
+  env.declareVar("join", MK_NATIVE_FN(joinFunct), true);
 
   env.declareVar("pushToFront", MK_NATIVE_FN(pushToFront), true);
 
   env.declareVar("popFrom", MK_NATIVE_FN(popFrom), true);
 
   env.declareVar("popFromFront", MK_NATIVE_FN(popFromFront), true);
+
+  //env.declareVar("length", MK_NATIVE_FN(length), true);
 
   //env.declareVar("reverse", MK_NATIVE_FN(reverse), true);
 

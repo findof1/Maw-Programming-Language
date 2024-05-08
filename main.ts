@@ -2,7 +2,13 @@ import Parser from "./frontend/parser.ts";
 import Environment, { createGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
 
-const text = Deno.readTextFileSync("./main.maws")
+
+let text = Deno.readTextFileSync("./main.maws");
+
+if (Deno.args.length >= 1) {
+  const filePath = Deno.args[0];
+  text = Deno.readTextFileSync(filePath);
+ }
 
 export const lib = Deno.dlopen("test.dll", {
   simulateKeyPress:{
